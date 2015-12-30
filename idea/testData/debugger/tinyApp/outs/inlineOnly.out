@@ -10,7 +10,7 @@ inlineOnly.kt:13
 inlineOnly.kt:14
 inlineOnly.kt:7
 inlineOnly.kt:9
-PrintStream.!EXT!
+VirtualFile for position is null
 Disconnected from the target VM, address: '!HOST_NAME!:PORT_NAME!', transport: 'socket'
 
 Process finished with exit code 0
