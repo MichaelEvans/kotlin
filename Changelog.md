@@ -22,3 +22,7 @@
 ### IDE
 - Debugger can distinguish nested inline arguments
 - Add kotlinClassName() and kotlinFunctionName() macros for use in live templates
+
+New features:
+
+- [KT-11098](https://youtrack.jetbrains.com/issue/KT-11098) Inspection on final classes/functions annotated with Spring @Configuration/@Component/@Bean
