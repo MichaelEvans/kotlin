@@ -22,3 +22,4 @@ New features:
 - [KT-11405](https://youtrack.jetbrains.com/issue/KT-11405) Navigation and Find Usages for Spring beans referenced in annotation arguments and BeanFactory method calls
 - [KT-3741](https://youtrack.jetbrains.com/issue/KT-3741) Show Spring-specific line markers on Kotlin classes
 - [KT-11406](https://youtrack.jetbrains.com/issue/KT-11406) Support Spring EL injections inside of Kotlin string literals
+- [KT-11407](https://youtrack.jetbrains.com/issue/KT-11407) Implemented "Generate Spring Dependency..." actions
