@@ -1,2 +1,6 @@
+Class 'a.A' was not found while loading 'fun consumeA(a: A<Int, String, Double>.Inner<B2>): Unit defined in b.B2'. Please make sure you have the required dependencies in the classpath at line -1, column -1
+Class 'a.A.Inner' was not found while loading 'fun produceA(): A<String>.Inner<Int, Unit> defined in b.B1'. Please make sure you have the required dependencies in the classpath at line -1, column -1
+Class 'a.AA' was not found while loading 'fun consumeAA(a: AA<Int, Unit>.Inner<String>): Unit defined in b.B2'. Please make sure you have the required dependencies in the classpath at line -1, column -1
+Class 'a.AA.Inner' was not found while loading 'fun produceAA(): AA<Int>.Inner<Unit, String> defined in b.B1'. Please make sure you have the required dependencies in the classpath at line -1, column -1
 Type mismatch: inferred type is A<String>.Inner<Int, Unit> but A<Int, String, Double>.Inner<B2> was expected at line 7, column 17
 Type mismatch: inferred type is AA<Int>.Inner<Unit, String> but AA<Int, Unit>.Inner<String> was expected at line 11, column 18
