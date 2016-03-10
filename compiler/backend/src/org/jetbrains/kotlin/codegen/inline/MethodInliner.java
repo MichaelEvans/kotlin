@@ -373,13 +373,16 @@ public class MethodInliner {
                 if(isInliningLambda || GENERATE_DEBUG_INFO) {
                     super.visitLineNumber(line, start);
                 }
+                if (!isInliningLambda && !GENERATE_DEBUG_INFO) {
+                    super.visitLineNumber(1, start);
+                }
             }
 
             @Override
             public void visitLocalVariable(
                     @NotNull String name, @NotNull String desc, String signature, @NotNull Label start, @NotNull Label end, int index
             ) {
-                if (isInliningLambda || GENERATE_DEBUG_INFO) {
+                if (isInliningLambda || GENERATE_DEBUG_INFO || InlineCodegenUtil.isFakeLocalVariableForInline(name)) {
                     String varSuffix = inliningContext.isRoot() &&
                                        !InlineCodegenUtil.isFakeLocalVariableForInline(name) ?
                                        INLINE_FUN_VAR_SUFFIX : "";

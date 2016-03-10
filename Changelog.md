@@ -16,3 +16,4 @@
 
 ### IDE
 - Debugger can distinguish nested inline arguments
+- Breakpoints inside lambda argument for functions marked as InlineOnly

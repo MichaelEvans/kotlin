@@ -24,15 +24,18 @@ import java.util.*
 //TODO comment
 class SMAPAndMethodNode(val node: MethodNode, val classSMAP: SMAP) {
     private val lineNumbers =
-        InsnSequence(node.instructions.first, null).filterIsInstance<LineNumberNode>().map { node ->
+        InsnSequence(node.instructions.first, null).filterIsInstance<LineNumberNode>().mapNotNull { node ->
             val index = classSMAP.intervals.binarySearch(RangeMapping(node.line, node.line, 1), Comparator {
                 value, key ->
                 if (key.dest in value) 0 else RangeMapping.Comparator.compare(value, key)
             })
-            if (index < 0) {
-                error("Unmapped label in inlined function $node ${node.line}")
+            if (index <= 0) {
+                null
+                //error("Unmapped label in inlined function $node ${node.line}")
             }
-            LabelAndMapping(node, classSMAP.intervals[index])
+            else {
+                LabelAndMapping(node, classSMAP.intervals[index])
+            }
         }.toList()
 
     val ranges = lineNumbers.asSequence().map { it.mapper }.distinct().toList()
