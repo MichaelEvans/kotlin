@@ -28,7 +28,7 @@ import org.jetbrains.kotlin.idea.core.quickfix.QuickFixUtil
 import org.jetbrains.kotlin.idea.refactoring.canRefactor
 import org.jetbrains.kotlin.lexer.KtModifierKeywordToken
 import org.jetbrains.kotlin.lexer.KtTokens
-import org.jetbrains.kotlin.lexer.KtTokens.ABSTRACT_KEYWORD
+import org.jetbrains.kotlin.lexer.KtTokens.*
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.DescriptorToSourceUtils
@@ -40,7 +40,7 @@ open class AddModifierFix(
 ) : KotlinQuickFixAction<KtModifierListOwner>(element) {
 
     override fun getText(): String {
-        if (modifier == ABSTRACT_KEYWORD || modifier == KtTokens.OPEN_KEYWORD) {
+        if (modifier in modalityModifiers) {
             return "Make ${getElementName(element)} ${modifier.value}"
         }
         return "Add '${modifier.value}' modifier"
@@ -49,6 +49,10 @@ open class AddModifierFix(
     override fun getFamilyName() = "Add modifier"
 
     override fun invoke(project: Project, editor: Editor?, file: KtFile) {
+        if (modifier in modalityModifiers) {
+            modalityModifiers.forEach { element.removeModifier(it) }
+        }
+        if (modifier == FINAL_KEYWORD && !element.hasModifier(OVERRIDE_KEYWORD)) return
         element.addModifier(modifier)
     }
 
@@ -57,6 +61,8 @@ open class AddModifierFix(
     }
 
     companion object {
+        private val modalityModifiers = setOf(ABSTRACT_KEYWORD, OPEN_KEYWORD, FINAL_KEYWORD)
+
         fun getElementName(modifierListOwner: KtModifierListOwner): String {
             var name: String? = null
             if (modifierListOwner is PsiNameIdentifierOwner) {
