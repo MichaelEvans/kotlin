@@ -1002,7 +1002,7 @@
                 <rule pattern="javax.inject.**" result="kotlin.reflect.jvm.internal.impl.javax.inject.@1"/>
             </jarjar>
 
-            <kotlinc src="${basedir}/generators/infrastructure/strip-kotlin-annotations.kts" output="">
+            <kotlinc src="${basedir}/generators-core/infrastructure/strip-kotlin-annotations.kts" output="">
                 <compilerarg value="-version"/>
                 <compilerarg value="-script"/>
                 <compilerarg value="kotlin/Metadata"/> <!-- Annotation to strip -->

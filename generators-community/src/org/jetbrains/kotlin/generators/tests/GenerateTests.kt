@@ -16,7 +16,6 @@
 
 package org.jetbrains.kotlin.generators.tests
 
-import junit.framework.TestCase
 import org.jetbrains.kotlin.AbstractDataFlowValueRenderingTest
 import org.jetbrains.kotlin.addImport.AbstractAddImportTest
 import org.jetbrains.kotlin.android.AbstractAndroidCompletionTest
@@ -37,7 +36,6 @@ import org.jetbrains.kotlin.findUsages.AbstractFindUsagesTest
 import org.jetbrains.kotlin.findUsages.AbstractKotlinFindUsagesWithLibraryTest
 import org.jetbrains.kotlin.formatter.AbstractFormatterTest
 import org.jetbrains.kotlin.formatter.AbstractTypingIndentationTestBase
-import org.jetbrains.kotlin.generators.tests.generator.*
 import org.jetbrains.kotlin.generators.tests.generator.TestGenerator.TargetBackend
 import org.jetbrains.kotlin.idea.AbstractExpressionSelectionTest
 import org.jetbrains.kotlin.idea.AbstractSmartSelectionTest
@@ -136,9 +134,6 @@ import org.jetbrains.kotlin.resolve.constraintSystem.AbstractConstraintSystemTes
 import org.jetbrains.kotlin.serialization.AbstractLocalClassProtoTest
 import org.jetbrains.kotlin.shortenRefs.AbstractShortenRefsTest
 import org.jetbrains.kotlin.types.AbstractTypeBindingTest
-import java.io.File
-import java.util.*
-import java.util.regex.Pattern
 
 private val kotlinFileOrScript = "^(.+)\\.(kt|kts)\$"
 
@@ -1061,80 +1056,4 @@ fun main(args: Array<String>) {
             model("codegen/box/super/", targetBackend = TargetBackend.JS)
         }
     }
-}
-
-internal class TestGroup(val testsRoot: String, val testDataRoot: String) {
-    inline fun <reified T: TestCase> testClass(
-            suiteTestClass: String = getDefaultSuiteTestClass(T::class.java),
-            noinline init: TestClass.() -> Unit
-    ) {
-        testClass(T::class.java, suiteTestClass, init)
-    }
-
-    fun testClass(
-            baseTestClass: Class<out TestCase>,
-            suiteTestClass: String = getDefaultSuiteTestClass(baseTestClass),
-            init: TestClass.() -> Unit
-    ) {
-        val testClass = TestClass()
-        testClass.init()
-
-        val lastDot = suiteTestClass.lastIndexOf('.')
-        val suiteTestClassName = if (lastDot == -1) suiteTestClass else suiteTestClass.substring(lastDot+1)
-        val suiteTestClassPackage = if (lastDot == -1) baseTestClass.`package`.name else suiteTestClass.substring(0, lastDot)
-
-        TestGenerator(
-                testsRoot,
-                suiteTestClassPackage,
-                suiteTestClassName,
-                baseTestClass,
-                testClass.testModels
-        ).generateAndSave()
-    }
-
-    inner class TestClass {
-        val testModels = ArrayList<TestClassModel>()
-
-        fun model(
-                relativeRootPath: String,
-                recursive: Boolean = true,
-                excludeParentDirs: Boolean = false,
-                extension: String? = "kt", // null string means dir (name without dot)
-                pattern: String = if (extension == null) """^([^\.]+)$""" else "^(.+)\\.$extension\$",
-                testMethod: String = "doTest",
-                singleClass: Boolean = false,
-                testClassName: String? = null,
-                targetBackend: TargetBackend = TargetBackend.ANY,
-                excludeDirs: List<String> = listOf(),
-                filenameStartsLowerCase: Boolean? = null
-        ) {
-            val rootFile = File(testDataRoot + "/" + relativeRootPath)
-            val compiledPattern = Pattern.compile(pattern)
-            val className = testClassName ?: TestGeneratorUtil.fileNameToJavaIdentifier(rootFile)
-            testModels.add(
-                    if (singleClass) {
-                        if (excludeDirs.isNotEmpty()) error("excludeDirs is unsupported for SingleClassTestModel yet")
-                        SingleClassTestModel(rootFile, compiledPattern, filenameStartsLowerCase, testMethod, className, targetBackend)
-                    }
-                    else {
-                        SimpleTestClassModel(rootFile, recursive, excludeParentDirs,
-                                             compiledPattern, filenameStartsLowerCase, testMethod, className, 
-                                             targetBackend, excludeDirs)
-                    }
-            )
-        }
-    }
-
-}
-
-private fun testGroup(testsRoot: String, testDataRoot: String, init: TestGroup.() -> Unit) {
-    TestGroup(testsRoot, testDataRoot).init()
-}
-
-private fun getDefaultSuiteTestClass(baseTestClass:Class<*>): String {
-    val baseName = baseTestClass.simpleName
-    if (!baseName.startsWith("Abstract")) {
-        throw IllegalArgumentException("Doesn't start with \"Abstract\": $baseName")
-    }
-    return baseName.substring("Abstract".length) + "Generated"
 }
