@@ -16,3 +16,4 @@
 
 ### IDE
 - Debugger can distinguish nested inline arguments
+- Complete private members from libraries in Evaluate Expression dialog
