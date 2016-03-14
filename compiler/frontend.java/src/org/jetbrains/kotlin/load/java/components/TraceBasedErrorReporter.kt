@@ -27,6 +27,7 @@ import org.jetbrains.kotlin.serialization.deserialization.BinaryVersion
 import org.jetbrains.kotlin.serialization.deserialization.ErrorReporter
 import org.jetbrains.kotlin.util.slicedMap.Slices
 import org.jetbrains.kotlin.util.slicedMap.WritableSlice
+import org.jetbrains.kotlin.utils.newLinkedHashSetWithExpectedSize
 
 class TraceBasedErrorReporter(private val trace: BindingTrace) : ErrorReporter {
     companion object {
@@ -39,8 +40,9 @@ class TraceBasedErrorReporter(private val trace: BindingTrace) : ErrorReporter {
         @JvmField
         val INCOMPLETE_HIERARCHY: WritableSlice<ClassDescriptor, MutableList<String>> = Slices.createCollectiveSlice()
 
+        // TODO: drop
         @JvmField
-        val NOT_FOUND_CLASSES: WritableSlice<ClassId, DeclarationDescriptor> = Slices.createCollectiveSlice()
+        val NOT_FOUND_CLASSES: WritableSlice<DeclarationDescriptor, MutableSet<ClassId>> = Slices.createCollectiveSlice()
     }
 
     override fun reportIncompatibleMetadataVersion(classId: ClassId, filePath: String, actualVersion: BinaryVersion) {
@@ -57,10 +59,10 @@ class TraceBasedErrorReporter(private val trace: BindingTrace) : ErrorReporter {
     }
 
     override fun reportNotFoundClass(classId: ClassId, origin: DeclarationDescriptor) {
-        if (trace.get(NOT_FOUND_CLASSES, classId) == null) {
-            // Record only the first appearance of a missing class
-            trace.record(NOT_FOUND_CLASSES, classId, origin)
+        val set = trace.get(NOT_FOUND_CLASSES, origin) ?: newLinkedHashSetWithExpectedSize<ClassId>(1).apply {
+            trace.record(NOT_FOUND_CLASSES, origin, this)
         }
+        set.add(classId)
     }
 
     override fun reportLoadingError(message: String, exception: Exception?) {

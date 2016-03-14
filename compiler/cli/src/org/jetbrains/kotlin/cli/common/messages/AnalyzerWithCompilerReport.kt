@@ -33,7 +33,6 @@ import org.jetbrains.kotlin.load.java.components.IncompatibleVersionErrorData
 import org.jetbrains.kotlin.load.java.components.TraceBasedErrorReporter
 import org.jetbrains.kotlin.load.kotlin.JvmMetadataVersion
 import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.renderer.DescriptorRenderer
 import org.jetbrains.kotlin.resolve.AnalyzingUtils
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.DescriptorToSourceUtils
@@ -64,22 +63,6 @@ class AnalyzerWithCompilerReport(collector: MessageCollector) {
             message.append("    class ").append(fqName).append(", unresolved supertypes: ").append(unresolved!!.joinToString()).append("\n")
         }
         messageCollector.report(CompilerMessageSeverity.ERROR, message.toString(), CompilerMessageLocation.NO_LOCATION)
-    }
-
-    private fun reportNotFoundClasses() {
-        val bindingContext = analysisResult.bindingContext
-        val classIds = bindingContext.getKeys(TraceBasedErrorReporter.NOT_FOUND_CLASSES)
-        if (classIds.isEmpty()) return
-
-        for (classId in classIds) {
-            val origin = bindingContext.get(TraceBasedErrorReporter.NOT_FOUND_CLASSES, classId)!!
-            val originDescription = DescriptorRenderer.COMPACT_WITH_SHORT_TYPES.render(origin)
-
-            val message = "Class '${classId.asSingleFqName().asString()}' was not found while loading '" + originDescription + "'. " +
-                          "Please make sure you have the required dependencies in the classpath"
-
-            messageCollector.report(CompilerMessageSeverity.ERROR, message.toString(), CompilerMessageLocation.NO_LOCATION)
-        }
     }
 
     private fun reportAlternativeSignatureErrors() {
@@ -154,7 +137,6 @@ class AnalyzerWithCompilerReport(collector: MessageCollector) {
         if (hasErrors()) {
             reportMetadataVersionErrors(abiVersionErrors)
         }
-        reportNotFoundClasses()
         reportIncompleteHierarchies()
         reportAlternativeSignatureErrors()
     }
