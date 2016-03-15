@@ -22,7 +22,9 @@ import org.jetbrains.kotlin.codegen.ClassBuilderFactory
 import org.jetbrains.kotlin.codegen.DelegatingClassBuilder
 import org.jetbrains.kotlin.codegen.DelegatingClassBuilderFactory
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptorWithVisibility
 import org.jetbrains.kotlin.renderer.DescriptorRenderer
+import org.jetbrains.kotlin.renderer.DescriptorRendererModifier
 import org.jetbrains.kotlin.resolve.jvm.diagnostics.JvmDeclarationOrigin
 import org.jetbrains.kotlin.resolve.jvm.diagnostics.MemberKind
 import org.jetbrains.kotlin.resolve.jvm.diagnostics.RawSignature
@@ -38,12 +40,18 @@ class SignatureDumpingBuilderFactory(
 ) : DelegatingClassBuilderFactory(builderFactory) {
 
     companion object {
-        val MEMBER_RENDERER = DescriptorRenderer.COMPACT_WITH_MODIFIERS
-        val TYPE_RENDERER = DescriptorRenderer.withOptions { }
+        val MEMBER_RENDERER = DescriptorRenderer.withOptions {
+            withDefinedIn = false
+            modifiers -= DescriptorRendererModifier.VISIBILITY
+        }
+        val TYPE_RENDERER = DescriptorRenderer.withOptions {
+            modifiers -= DescriptorRendererModifier.VISIBILITY
+        }
     }
 
     private val outputStream: BufferedWriter by lazy {
-        println("INFO: Dumping signatures to $destination")
+        println("info: Dumping signatures to $destination")
+        destination.parentFile?.mkdirs()
         destination.bufferedWriter().apply { append("[\n") }
     }
     private var firstClassWritten: Boolean = false
@@ -86,6 +94,9 @@ class SignatureDumpingBuilderFactory(
             outputStream.append("\t{\n")
             origin.descriptor?.let {
                 outputStream.append("\t\t").appendNameValue("declaration", TYPE_RENDERER.render(it)).append(",\n")
+                (it as? DeclarationDescriptorWithVisibility)?.visibility?.let {
+                    outputStream.append("\t\t").appendNameValue("visibility", it.displayName).append(",\n")
+                }
             }
             outputStream.append("\t\t").appendNameValue("class", javaClassName).append(", \n")
 
@@ -95,6 +106,9 @@ class SignatureDumpingBuilderFactory(
                 append("\t\t\t{")
                 descriptor?.let {
                     appendNameValue("declaration", MEMBER_RENDERER.render(it)).append(", ")
+                    (it as? DeclarationDescriptorWithVisibility)?.visibility?.let {
+                        appendNameValue("visibility", it.displayName).append(", ")
+                    }
                 }
                 appendNameValue("name", signature.name).append(", ")
                 appendNameValue("desc", signature.desc).append("}")
