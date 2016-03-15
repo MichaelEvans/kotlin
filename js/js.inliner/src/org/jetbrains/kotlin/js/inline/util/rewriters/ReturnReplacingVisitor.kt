@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.js.inline.util.rewriters
 
 import com.google.dart.compiler.backend.js.ast.*
+import com.google.dart.compiler.backend.js.ast.metadata.syntheticExpr
 import org.jetbrains.kotlin.js.inline.util.canHaveSideEffect
 import org.jetbrains.kotlin.js.translate.utils.JsAstUtils
 
@@ -37,7 +38,9 @@ class ReturnReplacingVisitor(private val resultRef: JsNameRef?, private val brea
 
         val returnReplacement = getReturnReplacement(x.expression)
         if (returnReplacement != null) {
-            ctx.addNext(JsExpressionStatement(returnReplacement))
+            val statement = JsExpressionStatement(returnReplacement)
+            statement.syntheticExpr = true
+            ctx.addNext(statement)
         }
 
         if (breakLabel != null) {
@@ -48,8 +51,9 @@ class ReturnReplacingVisitor(private val resultRef: JsNameRef?, private val brea
 
     private fun getReturnReplacement(returnExpression: JsExpression?): JsExpression? {
         if (returnExpression != null) {
-            if (resultRef != null)
+            if (resultRef != null) {
                 return JsAstUtils.assignment(resultRef, returnExpression)
+            }
 
             if (returnExpression.canHaveSideEffect())
                 return returnExpression
