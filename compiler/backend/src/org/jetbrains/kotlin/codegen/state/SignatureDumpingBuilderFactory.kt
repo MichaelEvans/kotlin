@@ -63,7 +63,7 @@ class SignatureDumpingBuilderFactory(
         override fun getDelegate() = _delegate
 
         private val signatures = mutableListOf<Pair<RawSignature, DeclarationDescriptor?>>()
-        private var javaClassName: String? = null
+        private lateinit var javaClassName: String
 
         override fun defineClass(origin: PsiElement?, version: Int, access: Int, name: String, signature: String?, superName: String, interfaces: Array<out String>) {
             javaClassName = name
@@ -87,7 +87,7 @@ class SignatureDumpingBuilderFactory(
             origin.descriptor?.let {
                 outputStream.append("\t\t").appendNameValue("declaration", TYPE_RENDERER.render(it)).append(",\n")
             }
-            outputStream.append("\t\t").appendNameValue("class", javaClassName ?: "<unknown>").append(", \n")
+            outputStream.append("\t\t").appendNameValue("class", javaClassName).append(", \n")
 
             outputStream.append("\t\t").appendQuoted("members").append(": [\n")
             signatures.joinTo(outputStream, ",\n") { buildString {
