@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2015 JetBrains s.r.o.
+ * Copyright 2010-2016 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jetbrains.kotlin.idea.decompiler.textBuilder.DecompiledText
 import org.jetbrains.kotlin.idea.decompiler.textBuilder.descriptorToKey
 import org.jetbrains.kotlin.incremental.components.NoLookupLocation
 import org.jetbrains.kotlin.load.kotlin.BuiltInClassesAreSerializableOnJvm
+import org.jetbrains.kotlin.load.kotlin.MemberSignature
 import org.jetbrains.kotlin.psi.KtCallableDeclaration
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtDeclaration
@@ -44,6 +45,10 @@ open class KtDecompiledFile(
 
     private val decompiledText = LockedClearableLazyValue(Any()) {
         buildDecompiledText(provider.virtualFile)
+    }
+
+    fun getDeclarationBySignature(signature: MemberSignature): KtDeclaration? {
+        return decompiledText.get().signatureToRange[signature]?.let { findElementByRange(it) }
     }
 
     fun getDeclarationForDescriptor(descriptor: DeclarationDescriptor): KtDeclaration? {
@@ -73,10 +78,11 @@ open class KtDecompiledFile(
     }
 
     private fun DeclarationDescriptor.findElementForDescriptor(): KtDeclaration? {
-        return decompiledText.get().renderedDescriptorsToRange[descriptorToKey(this)]?.let { range ->
-            PsiTreeUtil.findElementOfClassAtRange(this@KtDecompiledFile, range.startOffset, range.endOffset, KtDeclaration::class.java)
-        }
+        return decompiledText.get().renderedDescriptorsToRange[descriptorToKey(this)]?.let { range -> findElementByRange(range) }
     }
+
+    private fun findElementByRange(range: TextRange) =
+            PsiTreeUtil.findElementOfClassAtRange(this@KtDecompiledFile, range.startOffset, range.endOffset, KtDeclaration::class.java)
 
     override fun getText(): String? {
         return decompiledText.get().text

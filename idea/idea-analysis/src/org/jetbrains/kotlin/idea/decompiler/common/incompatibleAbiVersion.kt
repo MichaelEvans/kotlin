@@ -34,6 +34,6 @@ fun <V : BinaryVersion> createIncompatibleAbiVersionDecompiledText(expectedVersi
             INCOMPATIBLE_ABI_VERSION_COMMENT
                     .replace(CURRENT_ABI_VERSION_MARKER, expectedVersion.toString())
                     .replace(FILE_ABI_VERSION_MARKER, actualVersion.toString()),
-            mapOf()
+            emptyMap(), emptyMap()
     )
 }

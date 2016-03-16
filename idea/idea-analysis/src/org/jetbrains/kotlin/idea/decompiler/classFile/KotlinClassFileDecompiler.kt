@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2015 JetBrains s.r.o.
+ * Copyright 2010-2016 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,8 @@ import org.jetbrains.kotlin.idea.decompiler.textBuilder.defaultDecompilerRendere
 import org.jetbrains.kotlin.load.kotlin.JvmMetadataVersion
 import org.jetbrains.kotlin.load.kotlin.header.KotlinClassHeader
 import org.jetbrains.kotlin.renderer.DescriptorRenderer
+import org.jetbrains.kotlin.serialization.deserialization.TypeTable
+import org.jetbrains.kotlin.serialization.jvm.JvmProtoBufUtil
 import org.jetbrains.kotlin.types.flexibility
 import org.jetbrains.kotlin.types.isFlexible
 import java.util.*
@@ -79,9 +81,12 @@ fun buildDecompiledTextForClassFile(
         KotlinClassHeader.Kind.FILE_FACADE ->
             buildDecompiledText(classId.packageFqName, ArrayList(resolver.resolveDeclarationsInFacade(classId.asSingleFqName())),
                                 decompilerRendererForClassFiles)
-        KotlinClassHeader.Kind.CLASS ->
+        KotlinClassHeader.Kind.CLASS -> {
+            val (nameResolver, classProto) = JvmProtoBufUtil.readClassDataFrom(classHeader.data!!, classHeader.strings!!)
+            val typeTable = TypeTable(classProto.typeTable)
             buildDecompiledText(classId.packageFqName, listOfNotNull(resolver.resolveTopLevelClass(classId)),
-                                decompilerRendererForClassFiles)
+                                decompilerRendererForClassFiles, nameResolver, typeTable)
+        }
         KotlinClassHeader.Kind.MULTIFILE_CLASS -> {
             val partClasses = findMultifileClassParts(classFile, classId, classHeader)
             val partMembers = partClasses.flatMap { partClass ->
